@@ -10,6 +10,8 @@
 
 
     <style type="text/css">
+        @import url('https://fonts.googleapis.com/css?family=Codystar:300&display=swap');
+
         * {
             margin: 0;
             padding: 0;
@@ -22,51 +24,78 @@
         }
 
         canvas {
+            background-color: black;
             display: block;
             width: 100%;
             height: 100%;
+            display: none;
         }
 
+        #start {
+            background-image: url('data:image/svg+xml,%3Csvg width="42" height="44" viewBox="0 0 42 44" xmlns="http://www.w3.org/2000/svg"%3E%3Cg id="Page-1" fill="none" fill-rule="evenodd"%3E%3Cg id="brick-wall" fill="%239C92AC" fill-opacity="0.4"%3E%3Cpath d="M0 0h42v44H0V0zm1 1h40v20H1V1zM0 23h20v20H0V23zm22 0h20v20H22V23z"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E');
+            width: 100vw;
+            height: 100vh;
+            background-color: black;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        p:first-child {
+            font-family: 'Codystar';
+            font-size: xx-large;
+            font-weight: bold;
+            -webkit-animation: glow 2s ease-in-out infinite alternate;
+            -moz-animation: glow 2s ease-in-out infinite alternate;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        p:nth-child(2) {
+            color: white;
+        }
+
+        @-webkit-keyframes glow {
+            from {
+                color: #fff;
+                text-shadow: 0 0 10px #00fff2, 0 0 20px #00fff2, 0 0 30px #00fff2, 0 0 40px #00fff2, 0 0 50px #00fff2, 0 0 60px #00fff2, 0 0 70px #00fff2, 0 0 90px #00fff2;
+            }
+
+            to {
+                color: gray;
+                text-shadow: 0 0 20px #00fff2, 0 0 30px #00fff2, 0 0 40px #00fff2, 0 0 50px #00fff2, 0 0 60px #00fff2, 0 0 70px #00fff2, 0 0 80px #00fff2, 0 1 90px #00fff2;
+            }
+        }
     </style>
 
 </head>
 
 <body>
 
-    <canvas id="canvas"></canvas>
-
-    <button id="autoclick" type="button" style="display: none; visibility: hidden;" data-toggle="modal"
-        data-target="#myModal"></button>
-
-    <div class="modal p-0" id="myModal">
-        <div class="modal-dialog modal-sm">
-            <div class="modal-content">
-                <div class="modal-body">
-                    <p>打磚塊遊戲</p>
-                    <p>調整網頁大小以設定遊戲難度</p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" onclick="startGame()" class="btn btn-secondary"
-                        data-dismiss="modal">確認</button>
-                </div>
-            </div>
+    <div id="start">
+        <div>
+            <p>-Breakout clone-</p>
+            <p>調整網頁長寬以設定遊戲難度</p>
+            <button type="button" onclick="startGame()" class="btn btn-outline-info">開始遊戲</button>
         </div>
     </div>
+    <canvas id="canvas"></canvas>
 
     <script>
-        $(function () { document.getElementById("autoclick").click(); });
-
+        // 網頁寬高變更時重新載入頁面
         $(window).on("resize", () => {
             window.location.reload();
         });
 
         var canvas = $('#canvas')[0];
-        canvas.width = window.innerWidth; // 畫布寬 = 視窗內的寬
-        canvas.height = window.innerHeight; // 畫布高 = 視窗內的高
+        // 畫布寬高 = 視窗內的寬高
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
         var context = canvas.getContext('2d');
+
+        // 板子寬高、初始位置
         var paddleX = canvas.width * 0.5;
         var paddleY = canvas.height * 0.9;
-
         var paddleWidth = 100;
         var paddleHeight = 15;
 
@@ -77,18 +106,15 @@
             context.fillRect(paddleX, paddleY, paddleWidth, paddleHeight);
         }
 
+        // 球的寬高、初始位置
         var ballX = canvas.width * 0.5;
         var ballY = canvas.height * 0.5;
         var ballRadius = 10;
 
         function drawBall() {
-            // Context.beginPath when you draw primitive shapes
             context.beginPath();
-            // Draw arc at center ballX, ballY with radius ballRadius,
-            // From 0 to 2xPI radians (full circle)
+            // 中心點位置座標為ballX、ballY，半徑為ballRadius，從0到2*PI的弧度(整個圓)
             context.arc(ballX, ballY, ballRadius, 0, Math.PI * 2, true);
-
-            // Fill up the path that you just drew
             context.fill();
         }
 
@@ -97,7 +123,7 @@
         var brickWidth = canvas.width / bricksPerRow;
         var total = 0;
 
-        // Brick Layout: 1 is orange, 2 is green, 3 is gray, 0 means no brick
+        // 磚塊設計: 1是黑色、2是灰色、3是白色、0代表沒磚塊，隨機生成磚塊數字
         var bricks = [];
         for (let i = 0; i < 4; i++) {
             bricks.push([]);
@@ -108,7 +134,7 @@
             }
         }
 
-        // iterate through the bricks array and draw each brick using drawBrick()
+        // 依序使用drawBrick()畫出磚塊
         function createBricks() {
             for (var i = 0; i < bricks.length; i++) {
                 for (var j = 0; j < bricks[i].length; j++) {
@@ -117,17 +143,17 @@
             }
         }
 
-        // draw a single brick
+        // 繪製單個磚塊
         function drawBrick(x, y, type) {
-            switch (type) { // if brick is still visible; three colors for three types of bricks
+            switch (type) { // 如果有磚塊，按照數字給對應顏色
                 case 1:
-                    context.fillStyle = 'orange';
+                    context.fillStyle = 'rgb(50,50,50)';
                     break;
                 case 2:
-                    context.fillStyle = 'rgb(100,200,100)';
+                    context.fillStyle = 'gray';
                     break;
                 case 3:
-                    context.fillStyle = 'gray';
+                    context.fillStyle = 'rgb(220,220,220)';
                     break;
                 default:
                     context.clearRect(x * brickWidth, y * brickHeight, brickWidth,
@@ -135,10 +161,10 @@
                     break;
             }
             if (type) {
-                //Draw rectangle with fillStyle color selected earlier
+                // 畫磚塊
                 context.fillRect(x * brickWidth, y * brickHeight, brickWidth,
                     brickHeight);
-                // Also draw blackish border around the brick
+                // 在磚塊周圍繪製黑色邊框
                 context.strokeRect(x * brickWidth + 1, y * brickHeight + 1,
                     brickWidth - 2, brickHeight - 2);
             }
@@ -147,13 +173,12 @@
         var score = 0;
 
         function displayScoreBoard() {
-            //Set the text font and color
-            context.fillStyle = 'rgb(50,100,50)';
+            context.fillStyle = 'rgb(205,205,200)';
             context.font = "20px Times New Roman";
 
-            //Clear the bottom 30 pixels of the canvas
+            // 清除畫布底部30px
             context.clearRect(0, canvas.height - 30, canvas.width, 30);
-            // Write Text 5 pixels from the bottom of the canvas
+            // 在畫布底端寫分數
             context.fillText('Score: ' + score, 10, canvas.height - 5);
         }
 
@@ -172,16 +197,18 @@
         var time = 0;
         var timer;
         function startGame() {
+            document.getElementById("start").style.display = 'none';
+            document.getElementById("canvas").style.display = 'block';
             ballDeltaY = -10;
             ballDeltaX = -4;
             paddleMove = 'NONE';
             paddleDeltaX = 0;
 
-            // call the animate() function every 200ms until clearInterval(gameLoop) is called
+            // 每200ms調用animate()，直到調用clearInterval（gameLoop）
             gameLoop = setInterval(animate, 20);
             timer = setInterval(function () { time += 1; }, 1000);
 
-            // Start Tracking Keystokes
+            // 按鍵追蹤
             $(document).keydown(function (evt) {
                 if (evt.keyCode == 39) {
                     paddleMove = 'RIGHT';
@@ -199,30 +226,29 @@
             });
         }
 
-
+        function startScreen() {
+            window.location.reload();
+        }
 
 
 
         function endGame(result = false) {
             clearInterval(timer);
-            // context.fillText('The End!!!!', canvas.width / 2, canvas.height / 2);
+            document.getElementById("start").style.display = 'flex';
+            document.getElementById("canvas").style.display = 'none';
+            // 判斷輸贏顯示結果分數
             if (result) {
-                $("#myModal p:first-child").text("獲勝!!");
-                $("#myModal p:last-child").html(`遊戲時間 : ${time}秒<br>總分 : ${score}`);
+                $("#start p:first-child").text("-Win-");
+                $("#start p:last-child").html(`遊戲時間 : ${time}秒<br>總分 : ${score}`);
             } else {
-                $("#myModal p:first-child").text("遊戲結束");
-                $("#myModal p:last-child").html(`遊戲時間 : ${time}秒<br>總分 : ${score}`);
+                $("#start p:first-child").text("-Game over-");
+                $("#start p:nth-child(2)").html(`遊戲時間 : ${time}秒<br>總分 : ${score}`);
             }
-            $("#myModal button").removeAttr("onclick");
-            document.getElementById("autoclick").click();
+            $("#start button").text("確認");
+            document.querySelector("#start button").setAttribute("onclick", "startScreen()");
             clearInterval(gameLoop);
         }
 
-        // function getRandom(min, max) {
-        //     return Math.floor(Math.random() * max) + min;
-        // };
-
-        // startGame();
         var ballDeltaX;
         var ballDeltaY;
 
@@ -230,42 +256,36 @@
         var breakingSound = new Audio("break.ogg");
         function moveBall() {
 
-            // First check if we will bump into something
-            // If top of the ball touches the top then reverse Y direction
+            // 如果球碰到頂端或Y方向碰到磚塊則反轉Y方向
             if (ballY + ballDeltaY - ballRadius < 0
-                // or if ball collides in Y direction with bricks
                 || collisionYWithBricks()) {
                 ballDeltaY = -ballDeltaY;
                 bouncingSound.play();
             }
 
-            // If the bottom of the ball touches the bottom of the screen then end the game
+            // 若球碰到畫面底部則結束遊戲
             if (ballY + ballDeltaY + ballRadius > canvas.height) {
                 endGame();
             }
-            // If side of ball touches either side of the wall then reverse X direction
-            //left of ball moves too far left
+            // 若球碰到牆的左右側或X方向碰到磚塊則反轉X方向
             if ((ballX + ballDeltaX - ballRadius < 0) ||
-                //or right side of ball moves too far right
                 (ballX + ballDeltaX + ballRadius > canvas.width)
-                // or if ball collides in Y direction with bricks
                 || collisionXWithBricks()
             ) {
                 ballDeltaX = -ballDeltaX;
                 bouncingSound.play();
             }
 
-            // if bottom of ball reaches the top of paddle,
+            // 若球的底部到達球拍頂端高度
             if (ballY + ballDeltaY + ballRadius >= paddleY) {
-                // and it is positioned between the two ends of the paddle (is on top)
+                // 且在球拍範圍內
                 if (ballX + ballDeltaX >= paddleX &&
                     ballX + ballDeltaX <= paddleX + paddleWidth) {
                     ballDeltaY = - ballDeltaY;
-                    //bouncingSound.play();
+                    // bouncingSound.play();
                 }
             }
 
-            // Move the ball
             ballX = ballX + ballDeltaX;
             ballY = ballY + ballDeltaY;
         }
@@ -281,7 +301,7 @@
             } else {
                 paddleDeltaX = 0;
             }
-            // If paddle reaches the ends, then don't let it move
+            // 如果paddle碰到畫面邊緣則不再往外移動
             if (paddleX + paddleDeltaX < 0 || paddleX + paddleDeltaX + paddleWidth > canvas.width) {
                 paddleDeltaX = 0;
             }
@@ -289,14 +309,13 @@
         }
 
         function explodeBrick(i, j) {
-            // First weaken the brick (0 means brick has gone)
+            // 先將磚塊減弱
             bricks[i][j]--;
             total--;
+            // 如果磚塊還存在則給1分，消失給2分
             if (bricks[i][j] > 0) {
-                // The brick is weakened but still around. Give a single point.
                 score++;
             } else {
-                // give player an extra point when the brick disappears
                 score += 2;
                 breakingSound.play();
             }
@@ -309,21 +328,21 @@
             var bumpedX = false;
             for (var i = 0; i < bricks.length; i++) {
                 for (var j = 0; j < bricks[i].length; j++) {
-                    if (bricks[i][j]) { // if brick is still visible
+                    if (bricks[i][j]) { // 如果磚塊還在
                         var brickX = j * brickWidth;
                         var brickY = i * brickHeight;
                         if (
-                            // barely touching from left
+                            // 從左側碰觸
                             ((ballX + ballDeltaX + ballRadius >= brickX) &&
                                 (ballX + ballRadius <= brickX))
                             ||
-                            // barely touching from right
+                            // 從右側碰觸
                             ((ballX + ballDeltaX - ballRadius <= brickX + brickWidth) &&
                                 (ballX - ballRadius >= brickX + brickWidth))
                         ) {
                             if ((ballY + ballDeltaY - ballRadius <= brickY + brickHeight) &&
                                 (ballY + ballDeltaY + ballRadius >= brickY)) {
-                                // weaken brick and increase score
+                                // 削弱磚塊且增加分數
                                 explodeBrick(i, j);
 
                                 bumpedX = true;
@@ -340,20 +359,20 @@
             var bumpedY = false;
             for (var i = 0; i < bricks.length; i++) {
                 for (var j = 0; j < bricks[i].length; j++) {
-                    if (bricks[i][j]) { // if brick is still visible
+                    if (bricks[i][j]) { // 如果磚塊還在
                         var brickX = j * brickWidth;
                         var brickY = i * brickHeight;
                         if (
-                            // barely touching from below
+                            // 從下方碰觸
                             ((ballY + ballDeltaY - ballRadius <= brickY + brickHeight) &&
                                 (ballY - ballRadius >= brickY + brickHeight))
                             ||
-                            // barely touching from above
+                            // 從上方碰觸
                             ((ballY + ballDeltaY + ballRadius >= brickY) &&
                                 (ballY + ballRadius <= brickY))) {
                             if (ballX + ballDeltaX + ballRadius >= brickX &&
                                 ballX + ballDeltaX - ballRadius <= brickX + brickWidth) {
-                                // weaken brick and increase score
+                                // 削弱磚塊且增加分數
                                 explodeBrick(i, j);
                                 bumpedY = true;
                             }
